@@ -1,0 +1,9 @@
+my_cloud_agent:
+  type: ec2
+  instance_type: t2.micro
+  requirements: requirements.txt
+  entrypoint:
+  	type: function
+  	src: <python script>.<function name>
+  	kwargs:
+  	  kwarg1: value1
