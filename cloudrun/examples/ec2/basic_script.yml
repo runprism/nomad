@@ -3,5 +3,5 @@ my_cloud_agent:
   instance_type: t2.micro
   requirements: requirements.txt
   entrypoint:
-  	type: script
-  	cmd: python <script name>.py
+    type: script
+    cmd: <script_name>.py

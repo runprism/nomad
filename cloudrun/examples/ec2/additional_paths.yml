@@ -3,10 +3,9 @@ my_cloud_agent:
   instance_type: t2.micro
   requirements: requirements.txt
   entrypoint:
-  	type: function
-  	src: <python script>.<function name>
-  	kwargs:
-  	  kwarg1: value1
+    type: function
+    cmd: <python script>.<function name>
+    kwargs:
+      kwarg1: value1
   additional_paths:
-    - ...
-    - ...
+    - "{{ Path(__file__).parent }}"

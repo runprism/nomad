@@ -14,6 +14,7 @@ from cloudrun.agents.meta import MetaAgent
 # Standard library imports
 import argparse
 from typing import Any, Dict
+from pathlib import Path
 
 
 ####################
@@ -32,14 +33,27 @@ class Agent(metaclass=MetaAgent):
 
     def __init__(self,
         args: argparse.Namespace,
-        agent_conf: Dict[str, Any]
+        cloudrun_wkdir: Path,
+        agent_name: str,
+        agent_conf: Dict[str, Any],
+        mode: str = "prod"
     ):
         """
         Create agent
 
         args:
             args: user arguments
-            conf_fpath: path to the agent's configuration YAML
+            agent_conf: agent configuration as a dictionary
+            mode: either `prod` of `test`. This allows us to test agents without
+                instantiating cloud resources
         """
         self.args = args
+        self.cloudrun_wkdir = cloudrun_wkdir
+        self.agent_name = agent_name
         self.agent_conf = agent_conf
+
+        # Check the configuration
+        self.check_conf(self.agent_conf)
+
+    def check_conf(self, conf: Dict[str, Any]):
+        return True

@@ -73,7 +73,7 @@ class YmlParser:
         self.globals = jinja_template.globals
 
         # Store the path of the file itself in `__file__`
-        self.globals["__file__"] = str(self.path)
+        self.globals["__file__"] = str(self.fpath)
 
         # Update template globals with inputted function dictinoary
         jinja_template.globals.update(func_dict)
@@ -102,7 +102,7 @@ class YmlParser:
         }
 
         # Rendered string
-        rendered_string = self.render(self.path.parent, self.path.name, func_dict)
+        rendered_string = self.render(self.fpath.parent, self.fpath.name, func_dict)
 
         # Return YAML dict
         yml_dict = self.create_yml_dict(rendered_string)

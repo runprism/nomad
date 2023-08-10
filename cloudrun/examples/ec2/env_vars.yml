@@ -3,8 +3,8 @@ my_cloud_agent:
   instance_type: t2.micro
   requirements: requirements.txt
   entrypoint:
-  	type: script
-  	cmd: python <script name>.py
+    type: script
+    src: <script_name>.py
   env:
     SNOWFLAKE_ACCOUNT: '{{ env("SNOWFLAKE_ACCOUNT") }}'
     SNOWFLAKE_DATABASE: '{{ env("SNOWFLAKE_DATABASE") }}'

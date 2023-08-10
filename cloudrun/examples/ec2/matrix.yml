@@ -3,12 +3,15 @@ my_cloud_agent:
   instance_type: t2.micro
   requirements: requirements.txt
   matrix:
-  	max_concurrency: 4
-  	dimension1: ["VAR1", "VAR2", "VAR2", "VAR3"]
-  	dimension2: ["VARA", "VARB"]
+    max_concurrency: 4
+    dimension1: ["VAR1", "VAR2", "VAR2", "VAR3"]
+    dimension2: ["VARA", "VARB"]
   entrypoint:
-  	type: script
-  	cmd: python <script name>.py --dim1 {{ matrix.dimension1 }} --dim2 {{ matrix.dimension2 }}
+    type: script
+    src: <script name>.py
+    args:
+    - dim1: "{{ matrix.dimension1 }}"
+    - dim2: "{{ matrix.dimension2 }}"
   env:
     SNOWFLAKE_ACCOUNT: '{{ env("SNOWFLAKE_ACCOUNT") }}'
     SNOWFLAKE_DATABASE: '{{ env("SNOWFLAKE_DATABASE") }}'
