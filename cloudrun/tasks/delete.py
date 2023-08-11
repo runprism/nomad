@@ -1,5 +1,5 @@
 """
-Task called via the `cloudrun apply` CLI command
+Task called via the `cloudrun delete` CLI command
 """
 
 
@@ -14,7 +14,7 @@ from cloudrun.tasks.base import BaseTask
 
 
 # Class definition
-class ApplyTask(BaseTask):
+class DeleteTask(BaseTask):
 
     def run(self):
         """
@@ -27,4 +27,4 @@ class ApplyTask(BaseTask):
             agent_name=self.name,
             agent_conf=self.conf,
         )
-        agent.apply()
+        agent.delete()

@@ -57,3 +57,25 @@ class Agent(metaclass=MetaAgent):
 
     def check_conf(self, conf: Dict[str, Any]):
         return True
+
+    def parse_requirements(self, agent_conf: Dict[str, Any]):
+        """
+        Get the requirements.txt path and construct the pip install statement.
+
+        args:
+            agent_conf: agent configuration as dictionary
+        returns:
+            requirements path
+        """
+        # We already know that the agent configuration is valid. Therefore, it must have
+        # a requirements key.
+        requirements = agent_conf["requirements"]
+
+        # The `requirements.txt` path should always be specified relative to the
+        # directory of the CloudRun configuration file.
+        absolute_requirements_path = Path(self.cloudrun_wkdir / requirements).resolve()
+
+        # Check if this file exists
+        if not absolute_requirements_path.is_file():
+            raise ValueError(f"no file found at {absolute_requirements_path}")
+        return absolute_requirements_path
