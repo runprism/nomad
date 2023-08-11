@@ -18,6 +18,9 @@ from cloudrun.utils import (
     _check_optional_key_in_conf,
 )
 from cloudrun.parsers.yml import YmlParser
+from cloudrun.cloudrun_logger import (
+    set_up_logger
+)
 
 
 # Class definition
@@ -50,6 +53,9 @@ class BaseTask:
 
         # Get the specific agent configuration
         self.conf = raw_conf[self.name]
+
+        # Set up logger
+        set_up_logger(self.args.log_level)
 
     def check(self):
         """

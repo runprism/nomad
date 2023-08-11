@@ -13,6 +13,10 @@ if not INTERNAL_FOLDER.is_dir():
     INTERNAL_FOLDER.mkdir(parents=True)
 
 
+# Logger name
+DEFAULT_LOGGER_NAME = "cloudrun_logger"
+
+
 # Supported cloud agents
 SUPPORTED_AGENTS = [
     "ec2"

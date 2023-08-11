@@ -11,7 +11,8 @@ Docker Agent.
 from cloudrun.agents.base import Agent
 from cloudrun.constants import (
     INTERNAL_FOLDER,
-    EC2_SUPPORTED_INSTANCE_TYPES
+    EC2_SUPPORTED_INSTANCE_TYPES,
+    DEFAULT_LOGGER_NAME
 )
 from cloudrun.utils import (
     ConfigurationKey,
@@ -41,7 +42,7 @@ import stat
 ##########
 
 import logging
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(DEFAULT_LOGGER_NAME)
 
 
 ####################
@@ -712,7 +713,7 @@ class Ec2(Agent):
                     key_name=instance_name,
                 )
                 log_instance_name = f"{cloudrun.ui.MAGENTA}{instance_name}{cloudrun.ui.RESET}"  # noqa: E501
-                print(  # type: ignore
+                logger.info(
                     f"{log_prefix} | Created key pair {log_instance_name}"
                 )
 
@@ -735,7 +736,7 @@ class Ec2(Agent):
                 # Log
                 log_instance_name = f"{cloudrun.ui.MAGENTA}{instance_name}{cloudrun.ui.RESET}"  # noqa: E501
                 log_instance_path = f"{cloudrun.ui.MAGENTA}{str(pem_key_path)}{cloudrun.ui.RESET}"  # noqa: E501
-                print(  # type: ignore
+                logger.info(
                     f"{log_prefix} | Using existing key-pair {log_instance_name} at {log_instance_path}"  # noqa: E501
                 )
 
@@ -749,7 +750,7 @@ class Ec2(Agent):
                 # Log
                 log_security_group_id = f"{cloudrun.ui.MAGENTA}{security_group_id}{cloudrun.ui.RESET}"  # noqa: E501
                 log_vpc_id = f"{cloudrun.ui.MAGENTA}{vpc_id}{cloudrun.ui.RESET}"  # noqa: E501
-                print(  # type: ignore
+                logger.info(
                     f"{log_prefix} | Created security group with ID {log_security_group_id} in VPC {log_vpc_id}"  # noqa: E501
                 )
 
@@ -766,7 +767,7 @@ class Ec2(Agent):
                 security_group_id = self.security_group_id
                 self.check_ingress_ip(ec2_client, security_group_id)
                 log_security_group_id = f"{cloudrun.ui.MAGENTA}{security_group_id}{cloudrun.ui.RESET}"  # noqa: E501
-                print(  # type: ignore
+                logger.info(
                     f"{log_prefix} | Using existing security group {log_security_group_id}"  # noqa: E501
                 )
 
@@ -799,7 +800,7 @@ class Ec2(Agent):
                 instance_id = instance[0].id
 
                 # Log
-                print(  # type: ignore
+                logger.info(
                     f"{log_prefix} | Created EC2 instance with ID {log_instance_id_template.format(instance_id=instance_id)}"  # noqa: E501
                 )
                 time.sleep(1)
@@ -809,7 +810,7 @@ class Ec2(Agent):
                 instance_id = self.instance_id
 
                 # Log
-                print(  # type: ignore
+                logger.info(
                     f"{log_prefix} | Using existing EC2 instance with ID {log_instance_id_template.format(instance_id=instance_id)}"  # noqa: E501
                 )
 
@@ -830,7 +831,7 @@ class Ec2(Agent):
 
                     # Log
                     log_pending_status = f"{cloudrun.ui.YELLOW}pending{cloudrun.ui.RESET}"  # noqa: E501
-                    print(  # type: ignore
+                    logger.info(
                         f"{log_prefix} | Instance {log_instance_id_template.format(instance_id=instance_id)} is `{log_pending_status}`... checking again in 5 seconds"  # noqa: E501
                     )
                     resp = self.check_instance_data(
@@ -875,7 +876,7 @@ class Ec2(Agent):
             # Log the deleted resources
             log_prefix = f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{cloudrun.ui.RED}[delete]{cloudrun.ui.RESET}"  # noqa: E501
             for rs_name, rs_id in deleted_resources.items():
-                print(  # type: ignore
+                logger.info(
                     f"{log_prefix} | Deleting {rs_name} `{rs_id}`"
                 )
             raise e
@@ -961,12 +962,12 @@ class Ec2(Agent):
         if output:
             if isinstance(output, str):
                 if not re.findall(r"^[\-]+$", output.rstrip()):
-                    print(
+                    logger.info(
                         f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{color}[{which}]{cloudrun.ui.RESET} | {output.rstrip()}"  # noqa: E501
                     )
             else:
                 if not re.findall(r"^[\-]+$", output.decode().rstrip()):
-                    print(
+                    logger.info(
                         f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{color}[{which}]{cloudrun.ui.RESET} | {output.decode().rstrip()}"  # noqa: E501
                     )
 
@@ -1014,7 +1015,7 @@ class Ec2(Agent):
         Create the EC2 instance image
         """
         # Fire an empty line -- it just looks a little nicer
-        print("\n")
+        logger.info(" ")
 
         # Instance type
         instance_type = self.parse_instance_type(self.agent_conf)
@@ -1042,49 +1043,49 @@ class Ec2(Agent):
             instance_type
         )
 
-        # # The `create_instance` command is blocking — it won't finish until the instance
-        # # is up and running.
-        # try:
-        #     user = "ec2-user"
-        #     public_dns_name = data["resources"]["public_dns_name"]
-        #     pem_key_path = data["files"]["pem_key_path"]
+        # The `create_instance` command is blocking — it won't finish until the instance
+        # is up and running.
+        try:
+            user = "ec2-user"
+            public_dns_name = data["resources"]["public_dns_name"]
+            pem_key_path = data["files"]["pem_key_path"]
 
-        #     # Build the shell command
-        #     cmd = [
-        #         '/bin/sh', self.AGENT_APPLY_SCRIPT,
-        #         '-r', str(requirements_txt_path),
-        #         '-p', str(pem_key_path),
-        #         '-u', user,
-        #         '-n', public_dns_name,
-        #         '-d', str(self.project.project_dir),
-        #         '-c', project_paths_cli,
-        #         '-e', env_cli,
-        #     ]
+            # Build the shell command
+            cmd = [
+                '/bin/sh', self.AGENT_APPLY_SCRIPT,
+                '-r', str(requirements_txt_path),
+                '-p', str(pem_key_path),
+                '-u', user,
+                '-n', public_dns_name,
+                '-d', str(self.project.project_dir),
+                '-c', project_paths_cli,
+                '-e', env_cli,
+            ]
 
-        #     # Open a subprocess and stream the logs
-        #     _, err, returncode = self.stream_logs(
-        #         cmd, cloudrun.ui.AGENT_WHICH_BUILD, "build"
-        #     )
+            # Open a subprocess and stream the logs
+            _, err, returncode = self.stream_logs(
+                cmd, cloudrun.ui.AGENT_WHICH_BUILD, "build"
+            )
 
-        #     # Log anything from stderr that was printed in the project
-        #     for line in err.readlines():
-        #         print(  # type: ignore
-        #             f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{cloudrun.ui.AGENT_WHICH_BUILD}[build]{cloudrun.ui.RESET} | {line.rstrip()}"  # noqa: E501
-        #         )
+            # Log anything from stderr that was printed in the project
+            for line in err.readlines():
+                logger.info(
+                    f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{cloudrun.ui.AGENT_WHICH_BUILD}[build]{cloudrun.ui.RESET} | {line.rstrip()}"  # noqa: E501
+                )
 
-        #     # If the return code is non-zero, then an error occurred. Delete all of the
-        #     # resources so that the user can try again.
-        #     if returncode != 0:
-        #         self.delete()
+            # If the return code is non-zero, then an error occurred. Delete all of the
+            # resources so that the user can try again.
+            if returncode != 0:
+                self.delete()
 
-        #     # Return the returncode. Return a dictionary in order to avoid confusing
-        #     # this output with the output of an event manager.
-        #     return {"return_code": returncode}
+            # Return the returncode. Return a dictionary in order to avoid confusing
+            # this output with the output of an event manager.
+            return {"return_code": returncode}
 
-        # # If we encounter any sort of error, delete the resources first and then raise
-        # except Exception as e:
-        #     self.delete()
-        #     raise e
+        # If we encounter any sort of error, delete the resources first and then raise
+        except Exception as e:
+            self.delete()
+            raise e
 
     def run(self):
         """
@@ -1095,7 +1096,7 @@ class Ec2(Agent):
 
         # Logging styling
         if self.instance_name is None or self.instance_id is None:
-            print(  # type: ignore
+            logger.info(
                 "Agent data not found! Use `prism agent apply` to create your agent"
             )
             return
@@ -1117,7 +1118,7 @@ class Ec2(Agent):
 
         # Log anything from stdout that was printed in the project
         for line in out.readlines():
-            print(  # type: ignore
+            logger.info(
                 f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{cloudrun.ui.AGENT_WHICH_RUN}[run]{cloudrun.ui.RESET} | {line.rstrip()}"  # noqa: E501
             )
 
@@ -1135,11 +1136,11 @@ class Ec2(Agent):
         In addition, remove the PEM key from our local files
         """
         # Fire an empty line -- it just looks a little nicer
-        print("\n")
+        logger.info(" ")
 
         # Logging styling
         if self.instance_name is None:
-            print(  # type: ignore
+            logger.info(
                 "Agent data not found! Did you manually delete the ~/.prism/ec2.json file?"  # noqa: E501
             )
             return
@@ -1149,13 +1150,13 @@ class Ec2(Agent):
 
         # Key pair
         if self.key_name is None:
-            print(  # type: ignore
+            logger.info(
                 f"{log_prefix} | No agent data found!"
             )
         else:
             log_key_pair = f"{cloudrun.ui.MAGENTA}{self.key_name}{cloudrun.ui.RESET}"
             log_key_path = f"{cloudrun.ui.MAGENTA}{str(self.pem_key_path)}{cloudrun.ui.RESET}"  # noqa: E501
-            print(  # type: ignore
+            logger.info(
                 f"{log_prefix} | Deleting key-pair {log_key_pair} at {log_key_path}"
             )
             self.ec2_client.delete_key_pair(
@@ -1165,12 +1166,12 @@ class Ec2(Agent):
 
         # Instance
         if self.instance_id is None:
-            print(  # type: ignore
+            logger.info(
                 f"{log_prefix} | No instance found!"
             )
         else:
             log_instance_id = f"{cloudrun.ui.MAGENTA}{self.instance_id}{cloudrun.ui.RESET}"  # noqa: E501
-            print(  # type: ignore
+            logger.info(
                 f"{log_prefix} | Deleting instance {log_instance_id}"
             )
             _ = self.ec2_client.terminate_instances(
@@ -1179,7 +1180,7 @@ class Ec2(Agent):
 
         # Security group
         if self.security_group_id is None:
-            print(  # type: ignore
+            logger.info(
                 f"{log_prefix} | No security group found! If this is a mistake, then you may need to reset your resource data"  # noqa: E501
             )
         else:
@@ -1189,13 +1190,13 @@ class Ec2(Agent):
                     self.ec2_client.delete_security_group(
                         GroupId=self.security_group_id
                     )
-                    print(  # type: ignore
+                    logger.info(
                         f"{log_prefix} | Deleting security group {log_security_group_id}"  # noqa: E501
                     )
                     break
                 except botocore.exceptions.ClientError as e:
                     if "DependencyViolation" in str(e):
-                        print(  # type: ignore
+                        logger.info(
                             f"{log_prefix} | Encountered `DependencyViolation` when deleting security group {log_security_group_id}...waiting 5 seconds and trying again"  # noqa: E501
                         )
                         time.sleep(5)

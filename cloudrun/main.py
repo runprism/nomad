@@ -35,11 +35,19 @@ def cli():
     help="""Name of agent within CloudRun configuration file""",
     required=False
 )
-def apply(file, name):
+@click.option(
+    '--log-level', '-l',
+    type=click.Choice(['info', 'warn', 'error', 'debug']),
+    default="info",
+    help="""Set the log level""",
+    required=False
+)
+def apply(file, name, log_level):
     args = argparse.Namespace()
     args.file = file
     args.name = name
     args.wkdir = Path.cwd()
+    args.log_level = log_level
 
     # Apply task
     task = apply_task.ApplyTask(args)
@@ -68,11 +76,19 @@ def run():
     help="""Name of agent within CloudRun configuration file""",
     required=False
 )
-def delete(file, name):
+@click.option(
+    '--log-level', '-l',
+    type=click.Choice(['info', 'warn', 'error', 'debug']),
+    default="info",
+    help="""Set the log level""",
+    required=False
+)
+def delete(file, name, log_level):
     args = argparse.Namespace()
     args.file = file
     args.name = name
     args.wkdir = Path.cwd()
+    args.log_level = log_level
 
     # Apply task
     task = delete_task.DeleteTask(args)
