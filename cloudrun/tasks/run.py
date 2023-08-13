@@ -20,11 +20,13 @@ class RunTask(BaseTask):
         """
         Create the agent specified in the user's configuration file
         """
+        self.check()
         agent_type = self.conf["type"]
         agent: Agent = MetaAgent.get_agent(agent_type)(
             args=self.args,
             cloudrun_wkdir=self.cloudrun_wkdir,
             agent_name=self.name,
             agent_conf=self.conf,
+            entrypoint=self.entrypoint,
         )
         agent.run()

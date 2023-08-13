@@ -95,5 +95,5 @@ done
 ssh -i ${pem_path} ${user}@${public_dns_name} "source ~/.bashrc"
 
 # Move all folders into the root folder
-ssh -i ${pem_path} ${user}@${public_dns_name} 'cd ~ && for dir in */; do sudo mv -f $dir ../../ ; done'
+ssh -i ${pem_path} ${user}@${public_dns_name} 'cd ~ && for dir in */; do sudo rm -rf ../../$dir; sudo mv -f $dir ../../ ; done'
 echo "Done updating remote project and file paths"

@@ -10,6 +10,7 @@ contains the base class for the agent.
 
 # Internal imports
 from cloudrun.agents.meta import MetaAgent
+from cloudrun.entrypoints import BaseEntrypoint
 
 # Standard library imports
 import argparse
@@ -36,6 +37,7 @@ class Agent(metaclass=MetaAgent):
         cloudrun_wkdir: Path,
         agent_name: str,
         agent_conf: Dict[str, Any],
+        entrypoint: BaseEntrypoint,
         mode: str = "prod"
     ):
         """
@@ -51,6 +53,7 @@ class Agent(metaclass=MetaAgent):
         self.cloudrun_wkdir = cloudrun_wkdir
         self.agent_name = agent_name
         self.agent_conf = agent_conf
+        self.entrypoint = entrypoint
 
         # Check the configuration
         self.check_conf(self.agent_conf)

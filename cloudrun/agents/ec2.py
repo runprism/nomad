@@ -19,6 +19,7 @@ from cloudrun.utils import (
     _check_key_in_conf
 )
 import cloudrun.ui
+from cloudrun.entrypoints import BaseEntrypoint
 
 # Standard library imports
 import argparse
@@ -70,9 +71,10 @@ class Ec2(Agent):
         cloudrun_wkdir: Path,
         agent_name: str,
         agent_conf: Dict[str, Any],
+        entrypoint: BaseEntrypoint,
         mode: str = "prod"
     ):
-        super().__init__(args, cloudrun_wkdir, agent_name, agent_conf, mode)
+        super().__init__(args, cloudrun_wkdir, agent_name, agent_conf, entrypoint, mode)
 
         # Check additional configuration
 
@@ -1075,7 +1077,7 @@ class Ec2(Agent):
         Run the project using the EC2 agent
         """
         # Full command
-        full_cmd = self.agent_conf["entrypoint"]["cmd"]
+        full_cmd = self.entrypoint.build_command()
 
         # Logging styling
         if self.instance_name is None or self.instance_id is None:

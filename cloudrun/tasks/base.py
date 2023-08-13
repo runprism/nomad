@@ -10,7 +10,6 @@ from typing import Any, Dict
 # Internal imports
 from cloudrun.constants import (
     SUPPORTED_AGENTS,
-    SUPPORTED_ENTRYPOINTS,
 )
 from cloudrun.utils import (
     ConfigurationKey,
@@ -20,6 +19,12 @@ from cloudrun.utils import (
 from cloudrun.parsers.yml import YmlParser
 from cloudrun.cloudrun_logger import (
     set_up_logger
+)
+from cloudrun.entrypoints import (  # noqa
+    MetaEntrypoint,
+    BaseEntrypoint,
+    Project,
+    Function
 )
 
 
@@ -99,10 +104,16 @@ class BaseTask:
             ConfigurationKey("type", str, SUPPORTED_AGENTS),
             ConfigurationKey("requirements", str),
             ConfigurationKey("entrypoint", dict),
-            ConfigurationKey("env", dict),
         ]
         for _k in required_keys:
             _check_key_in_conf(_k, conf, name)
+
+        optional_keys = [
+            ConfigurationKey("env", dict)
+        ]
+        for _k in optional_keys:
+            _check_optional_key_in_conf(_k, conf)
+
         return True
 
     def confirm_matrix_conf_structure(self,
@@ -155,27 +166,14 @@ class BaseTask:
             ValueError() if the `entrypoint` section is not properly structured
         """
         entrypoint = conf["entrypoint"]
-
-        # Only one required value: max_concurrency. This controls how many cloud
-        # instances are instantiated at once
-        required_keys = [
-            ConfigurationKey("type", str, SUPPORTED_ENTRYPOINTS),
-            ConfigurationKey("cmd", str),
-        ]
-        for _k in required_keys:
-            _check_key_in_conf(_k, entrypoint, "entrypoint")
-
-        # Projects *must* have a `src` key.
-        etype = entrypoint["type"]
-        if etype == "project":
-            src_key = ConfigurationKey("src", str)
-            _check_key_in_conf(src_key, entrypoint, "entrypoint")
-
-        # Functions can have keyword arguments (technically, scripts can have arguments
-        # as well, but we would expect these to be reflected in the command).
-        if etype == "function":
-            fn_key = ConfigurationKey("kwargs", dict)
-            _check_optional_key_in_conf(fn_key, entrypoint, "entrypoint")
+        if "type" not in entrypoint.keys():
+            raise ValueError(
+                "`entrypoint` does not have a nested `type` key"
+            )
+        self.entrypoint = MetaEntrypoint.get_entrypoint(entrypoint["type"])(
+            entrypoint_conf=entrypoint,
+            cloudrun_wkdir=self.cloudrun_wkdir,
+        )
 
     def confirm_additional_paths_conf_structure(self,
         conf: Dict[str, Any]
