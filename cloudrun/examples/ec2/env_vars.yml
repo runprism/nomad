@@ -4,7 +4,7 @@ my_cloud_agent:
   requirements: requirements.txt
   entrypoint:
     type: script
-    src: <script_name>.py
+    cmd: python <script_name>.py
   env:
     SNOWFLAKE_ACCOUNT: '{{ env("SNOWFLAKE_ACCOUNT") }}'
     SNOWFLAKE_DATABASE: '{{ env("SNOWFLAKE_DATABASE") }}'

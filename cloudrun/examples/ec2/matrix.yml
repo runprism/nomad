@@ -8,10 +8,7 @@ my_cloud_agent:
     dimension2: ["VARA", "VARB"]
   entrypoint:
     type: script
-    src: <script name>.py
-    args:
-    - dim1: "{{ matrix.dimension1 }}"
-    - dim2: "{{ matrix.dimension2 }}"
+    cmd: python <script name>.py --dim1 {{ matrix.dimension1 }} --dim2 {{ matrix.dimension2 }}
   env:
     SNOWFLAKE_ACCOUNT: '{{ env("SNOWFLAKE_ACCOUNT") }}'
     SNOWFLAKE_DATABASE: '{{ env("SNOWFLAKE_DATABASE") }}'

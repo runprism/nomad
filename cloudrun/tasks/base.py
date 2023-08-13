@@ -31,7 +31,8 @@ class BaseTask:
     ):
         self.args = args
 
-        # Current working directory
+        # Current working directory. This is the directory containing the cloudrun.yml
+        # file.
         self.cloudrun_wkdir = Path(self.args.wkdir)
 
         # Args will definitely have a `file` attribute

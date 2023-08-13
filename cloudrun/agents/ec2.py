@@ -832,7 +832,7 @@ class Ec2(Agent):
                     # Log
                     log_pending_status = f"{cloudrun.ui.YELLOW}pending{cloudrun.ui.RESET}"  # noqa: E501
                     logger.info(
-                        f"{log_prefix} | Instance {log_instance_id_template.format(instance_id=instance_id)} is `{log_pending_status}`... checking again in 5 seconds"  # noqa: E501
+                        f"{log_prefix} | Instance {log_instance_id_template.format(instance_id=instance_id)} is {log_pending_status}... checking again in 5 seconds"  # noqa: E501
                     )
                     resp = self.check_instance_data(
                         ec2_client,
@@ -887,32 +887,14 @@ class Ec2(Agent):
     ) -> List[str]:
         """
         Prior to running our code on the EC2 instance, we first copy our code onto the
-        instance using SSH / SCP protocols. Specifically, we copy all the entrypoint
-        paths and the `additional_paths`.
+        instance using SSH / SCP protocols. Specifically, we copy the current working
+        directory and `additional_paths`.
 
         args:
             cloudrun_wkdir: user's working directory agent_conf: agent configuration
         returns:
             list of project paths
         """
-        entrypoint_type = agent_conf["entrypoint"]["type"]
-        entrypoint_src = None
-        if entrypoint_type == "project":
-            entrypoint_src = agent_conf["entrypoint"]["src"]
-
-        # Otherwise, parse the folder from the command
-        else:
-            entrypoint_src = agent_conf["entrypoint"]["cmd"].split("/")[0]
-
-        # Absolute src path
-        absolute_entrypoint_src = None
-        absolute_entrypoint_src = str(Path(cloudrun_wkdir) / entrypoint_src)
-        if not (
-            Path(absolute_entrypoint_src).is_dir()
-            or Path(absolute_entrypoint_src).is_file()  # noqa: W503
-        ):
-            raise ValueError("could not parse entrypoint path")
-
         # Additional paths
         additional_paths = []
         if "additional_paths" in agent_conf.keys():
@@ -921,7 +903,7 @@ class Ec2(Agent):
             ]
 
         # Return all paths
-        return [absolute_entrypoint_src] + additional_paths
+        return [cloudrun_wkdir] + additional_paths
 
     def parse_instance_type(self,
         agent_conf: Dict[str, Any]
@@ -1028,11 +1010,12 @@ class Ec2(Agent):
         env_cli = ",".join([f"{k}={v}" for k, v in env_dict.items()])
 
         # Paths to copy
-        project_paths = self.get_all_local_paths(
+        all_local_paths = self.get_all_local_paths(
             self.cloudrun_wkdir,
             self.agent_conf,
         )
-        project_paths_cli = ",".join(project_paths)
+        project_dir = all_local_paths.pop(0)
+        all_local_paths_cli = ",".join(all_local_paths)
 
         # Create the instance
         data = self.create_instance(
@@ -1057,8 +1040,8 @@ class Ec2(Agent):
                 '-p', str(pem_key_path),
                 '-u', user,
                 '-n', public_dns_name,
-                '-d', str(self.project.project_dir),
-                '-c', project_paths_cli,
+                '-d', str(project_dir),
+                '-c', all_local_paths_cli,
                 '-e', env_cli,
             ]
 
@@ -1092,12 +1075,12 @@ class Ec2(Agent):
         Run the project using the EC2 agent
         """
         # Full command
-        full_cmd = self.construct_command()
+        full_cmd = self.agent_conf["entrypoint"]["cmd"]
 
         # Logging styling
         if self.instance_name is None or self.instance_id is None:
             logger.info(
-                "Agent data not found! Use `prism agent apply` to create your agent"
+                "Agent data not found! Use `cloudrun apply` to create your agent"
             )
             return
 
@@ -1111,7 +1094,7 @@ class Ec2(Agent):
             '-p', str(self.pem_key_path),
             '-u', 'ec2-user',
             '-n', self.public_dns_name,
-            '-d', str(self.project.project_dir),
+            '-d', str(self.cloudrun_wkdir),
             '-c', full_cmd,
         ]
         out, _, returncode = self.stream_logs(cmd, cloudrun.ui.AGENT_WHICH_RUN, "run")

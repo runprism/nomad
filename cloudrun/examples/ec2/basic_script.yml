@@ -4,4 +4,4 @@ my_cloud_agent:
   requirements: requirements.txt
   entrypoint:
     type: script
-    cmd: <script_name>.py
+    cmd: python <script_name>.py
