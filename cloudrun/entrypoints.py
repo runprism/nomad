@@ -58,12 +58,31 @@ class BaseEntrypoint(metaclass=MetaEntrypoint):
         for _k in required_keys:
             _check_key_in_conf(_k, self.entrypoint_conf, "entrypoint")
 
+        # Optional keys
+        optional_keys = [
+            ConfigurationKey("src", str),
+
+        ]
+        for _k in optional_keys:
+            _check_optional_key_in_conf(_k, self.entrypoint_conf)
+
         # Update class attributes
-        self.type = self.entrypoint_conf["type"]
-        self.cmd = self.entrypoint_conf["cmd"]
+        self.type: str = self.entrypoint_conf["type"]
+        self.cmd: str = self.entrypoint_conf["cmd"]
+        self.src: str = ""
+        if "src" in self.entrypoint_conf.keys():
+            self.src = self.entrypoint_conf["src"]
+
+        # Check if `src` directory exists. Note that if `src` is blank, then Pathlib
+        # will just check if the CloudRun configuration file's directory exists.
+        if not Path(self.cloudrun_wkdir / self.src).is_dir():
+            raise ValueError("could not parse `src` for entrypoint")
 
     def build_command(self):
-        return self.cmd
+        if self.src != "":
+            return f"cd {self.src} && {self.cmd}"
+        else:
+            return self.cmd
 
 
 class Script(BaseEntrypoint):
@@ -75,20 +94,11 @@ class Script(BaseEntrypoint):
 
 
 class Project(BaseEntrypoint):
-
-    def check_conf(self):
-        """
-        Confirm that the entrypoint configuration is acceptable
-        """
-        super().check_conf()
-        src_key = ConfigurationKey("src", str)
-        _check_key_in_conf(src_key, self.entrypoint_conf, "entrypoint")
-
-        # Update class attributes
-        self.src = self.entrypoint_conf["src"]
-
-    def build_command(self):
-        return f"cd {self.src} && {self.cmd}"
+    """
+    Project entrypoint. We need this so out MetaEntrypoint class can create the
+    appropriate child class based on the user's `type`.
+    """
+    pass
 
 
 class Function(BaseEntrypoint):
@@ -98,8 +108,17 @@ class Function(BaseEntrypoint):
         Confirm that the entrypoint configuration is acceptable
         """
         super().check_conf()
-        kwargs_key = ConfigurationKey("kwargs", dict)
-        _check_optional_key_in_conf(kwargs_key, self.entrypoint_conf)
+        optional_keys = [
+            ConfigurationKey("kwargs", dict)
+
+        ]
+        for _k in optional_keys:
+            _check_optional_key_in_conf(_k, self.entrypoint_conf)
+
+        # Update class attributes
+        self.kwargs = {}
+        if "kwargs" in self.entrypoint_conf.keys():
+            self.kwargs = self.entrypoint_conf["kwargs"]
 
         # Check the format of the `cmd`. It should be something like <module
         # name>.<function name>`.
@@ -110,13 +129,18 @@ class Function(BaseEntrypoint):
         match = matches[0]
         self.module, self.function = match[0], match[1]
 
-        # Update class attributes
-        self.kwargs = {}
-        if "kwargs" in self.entrypoint_conf.keys():
-            self.kwargs = self.entrypoint_conf["kwargs"]
+        # Check if `module` exists as a file
+        if not (self.cloudrun_wkdir / self.src / f"{self.module}.py").is_file():
+            raise ValueError(
+                f"could not find module {str(self.cloudrun_wkdir / self.src / f'{self.module}.py')}"  # noqa: E501
+            )
 
     def build_command(self):
         kwargs_str = ", ".join([
             f'{k}="{v}"' if isinstance(v, str) else f"{k}={v}" for k, v in self.kwargs.items()  # noqa: E501
         ])
-        return f"python -c 'from {self.module} import {self.function}; {self.function}({kwargs_str})'"  # noqa: E501
+        base_python_cmd = f"python -c 'from {self.module} import {self.function}; {self.function}({kwargs_str})'"  # noqa: E501
+        if self.src != "":
+            return f"cd {self.src} && {base_python_cmd}"
+        else:
+            return base_python_cmd
