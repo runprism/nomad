@@ -1,5 +1,5 @@
 """
-Test cases for base task
+Test cases for YmlParser class
 """
 
 # Imports
