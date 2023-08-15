@@ -6,10 +6,4 @@ my_cloud_agent:
     type: script
     cmd: python <script_name>.py
   env:
-    SNOWFLAKE_ACCOUNT: '{{ env("SNOWFLAKE_ACCOUNT") }}'
-    SNOWFLAKE_DATABASE: '{{ env("SNOWFLAKE_DATABASE") }}'
-    SNOWFLAKE_PASSWORD: '{{ env("SNOWFLAKE_PASSWORD") }}'
-    SNOWFLAKE_ROLE: '{{ env("SNOWFLAKE_ROLE") }}'
-    SNOWFLAKE_SCHEMA: '{{ env("SNOWFLAKE_SCHEMA") }}'
-    SNOWFLAKE_USER: '{{ env("SNOWFLAKE_USER") }}'
-    SNOWFLAKE_WAREHOUSE: '{{ env("SNOWFLAKE_WAREHOUSE") }}'
+    ENV_VAR_1: ENV_VALUE_1
