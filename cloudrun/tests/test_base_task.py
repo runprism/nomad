@@ -11,7 +11,7 @@ import pytest
 
 # Constants
 TEST_DIR = Path(__file__).parent
-BAD_CONFS = TEST_DIR / 'bad_confs'
+CONFs = TEST_DIR / 'CONFs'
 TEST_FUNCTION = TEST_DIR / 'test_function'
 TEST_JUPYTER = TEST_DIR / 'test_jupyter'
 TEST_PROJECT = TEST_DIR / 'test_projects'
@@ -23,7 +23,7 @@ def _create_task(path: Path):
     args = argparse.Namespace()
     args.file = str(path)
     args.log_level = 'info'
-    args.wkdir = str(BAD_CONFS)
+    args.wkdir = str(CONFs)
     task = BaseTask(args)
 
     # Task name
@@ -32,11 +32,42 @@ def _create_task(path: Path):
 
 
 # Tests
+def test_normal_conf():
+    """
+    If `additional_paths` is not a list, throw an error
+    """
+    task = _create_task(path=(CONFs / 'normal_conf.yml'))
+    task.check()
+
+    # Expected configuration
+    expected_conf = {
+        "type": "ec2",
+        "instance_type": "t2.micro",
+        "requirements": "requirements.txt",
+        "entrypoint": {
+            "type": "function",
+            "src": "scripts",
+            "cmd": "test_fn.print_value",
+            "kwargs": {
+                "value": "hello world",
+            }
+        },
+        "additional_paths": [
+            str(CONFs)
+        ],
+        "env": {
+            "ENV_VAR_1": "VALUE1",
+            "ENV_VAR_2": "VALUE2",
+        }
+    }
+    assert expected_conf == task.conf
+
+
 def test_bad_yml_additional_paths():
     """
     If `additional_paths` is not a list, throw an error
     """
-    task = _create_task(path=(BAD_CONFS / 'bad_additional_paths.yml'))
+    task = _create_task(path=(CONFs / 'bad_additional_paths.yml'))
 
     # Run the check
     with pytest.raises(ValueError) as cm:
@@ -49,7 +80,7 @@ def test_bad_type():
     """
     If `type` is not currently supported, throw an error
     """
-    task = _create_task(path=(BAD_CONFS / 'bad_type.yml'))
+    task = _create_task(path=(CONFs / 'bad_type.yml'))
 
     # Run the check
     with pytest.raises(ValueError) as cm:
@@ -62,7 +93,7 @@ def test_no_type():
     """
     If `type` does not exist, throw an error
     """
-    task = _create_task(path=(BAD_CONFS / 'no_type.yml'))
+    task = _create_task(path=(CONFs / 'no_type.yml'))
 
     # Run the check
     with pytest.raises(ValueError) as cm:
@@ -76,7 +107,7 @@ def test_bad_requirements():
     `requirements` should be a string representing the path to the project's
     dependencies. If it isn't, throw an error.
     """
-    task = _create_task(path=(BAD_CONFS / 'bad_requirements.yml'))
+    task = _create_task(path=(CONFs / 'bad_requirements.yml'))
 
     # Run the check
     with pytest.raises(ValueError) as cm:
@@ -90,7 +121,7 @@ def test_bad_env():
     `requirements` should be a dictionary of environment variables. If it isn't, throw
     an error.
     """
-    task = _create_task(path=(BAD_CONFS / 'bad_env.yml'))
+    task = _create_task(path=(CONFs / 'bad_env.yml'))
 
     # Run the check
     with pytest.raises(ValueError) as cm:
@@ -104,7 +135,7 @@ def test_no_entrypoint():
     If `entrypoint` doesn't exist, throw an error. We parse the actual contents of the
     `entrypoint` dictionary in a separate test module.
     """
-    task = _create_task(path=(BAD_CONFS / 'no_entrypoint.yml'))
+    task = _create_task(path=(CONFs / 'no_entrypoint.yml'))
 
     # Run the check
     with pytest.raises(ValueError) as cm:
@@ -118,7 +149,7 @@ def test_bad_entrypoint():
     If `entrypoint` doesn't exist, throw an error. We parse the actual contents of the
     `entrypoint` dictionary in a separate test module.
     """
-    task = _create_task(path=(BAD_CONFS / 'bad_entrypoint.yml'))
+    task = _create_task(path=(CONFs / 'bad_entrypoint.yml'))
 
     # Run the check
     with pytest.raises(ValueError) as cm:
