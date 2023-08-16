@@ -15,9 +15,13 @@ from pathlib import Path
 import os
 
 
+# Use markup
+click.rich_click.USE_MARKDOWN = True
+
+
 # Construct command
 def invoke():
-    cli()
+    return cli()
 
 
 @click.group
@@ -28,7 +32,7 @@ def cli():
 @cli.command()
 @click.option(
     "--file", "-f",
-    type=str,
+    type=click.Path,
     help="""CloudRun configuration file""",
     required=True
 )
@@ -41,10 +45,10 @@ def cli():
     '--log-level', '-l',
     type=click.Choice(['info', 'warn', 'error', 'debug']),
     default="info",
-    help="""Set the log level""",
+    help="""Set the log level. Default is `info`""",
     required=False
 )
-def apply(file, name, log_level):
+def apply(file: str, name: str, log_level: str):
     args = argparse.Namespace()
     args.file = file
     args.name = name
@@ -53,7 +57,7 @@ def apply(file, name, log_level):
 
     # Apply task
     task = apply_task.ApplyTask(args)
-    task.run()
+    return task.run()
 
 
 @cli.command()
@@ -64,7 +68,7 @@ def build():
 @cli.command()
 @click.option(
     "--file", "-f",
-    type=str,
+    type=click.Path,
     help="""CloudRun configuration file""",
     required=True
 )
@@ -77,10 +81,17 @@ def build():
     '--log-level', '-l',
     type=click.Choice(['info', 'warn', 'error', 'debug']),
     default="info",
-    help="""Set the log level""",
+    help="""Set the log level _[default: `info`]_""",
     required=False
 )
-def run(file, name, log_level):
+@click.option(
+    '--no-delete',
+    is_flag=True,
+    default=False,
+    help="""Preserve the cloud resources after a successful project run _[default: `False`]_""",  # noqa: E501
+    required=False
+)
+def run(file: str, name: str, log_level: str, no_delete: bool):
     args = argparse.Namespace()
     args.file = file
     args.name = name
@@ -89,13 +100,13 @@ def run(file, name, log_level):
 
     # Apply task
     task = run_task.RunTask(args)
-    task.run()
+    return task.run()
 
 
 @cli.command()
 @click.option(
     "--file", "-f",
-    type=str,
+    type=click.Path,
     help="""CloudRun configuration file""",
     required=True
 )
@@ -108,10 +119,10 @@ def run(file, name, log_level):
     '--log-level', '-l',
     type=click.Choice(['info', 'warn', 'error', 'debug']),
     default="info",
-    help="""Set the log level""",
+    help="""Set the log level _[default is `info`]_""",
     required=False
 )
-def delete(file, name, log_level):
+def delete(file: str, name: str, log_level: str):
     args = argparse.Namespace()
     args.file = file
     args.name = name
@@ -120,4 +131,4 @@ def delete(file, name, log_level):
 
     # Apply task
     task = delete_task.DeleteTask(args)
-    task.run()
+    return task.run()
