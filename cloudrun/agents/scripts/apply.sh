@@ -33,18 +33,19 @@ project_parent_dir="$(dirname ${project_dir})"
 # Compare local requirements to remote requirements. If the two are identical, then do
 # not re-install the requirements. If they aren't, then create a new virtual environment
 # and reinstall.
-local_file="${requirements}"
-remote_file="./requirements.txt"
-temp_file=$(mktemp)
-scp -i ${pem_path} ${user}@${public_dns_name}:${remote_file} ${temp_file} 2> scp.log
-if diff $local_file $temp_file >/dev/null ; then
-    true # pass
-else
-	rm ${temp_file}
+if [ -z "${requirements}" ]; then
+	local_file="${requirements}"
+	remote_file="./requirements.txt"
+	temp_file=$(mktemp)
+	scp -i ${pem_path} ${user}@${public_dns_name}:${remote_file} ${temp_file} 2> scp.log
+	if diff $local_file $temp_file >/dev/null ; then
+		true # pass
+	else
+		rm ${temp_file}
 
-	# Copy the local requirements onto the EC2 instance
-	scp -i ${pem_path} ${local_file} ${user}@${public_dns_name}:${remote_file} 2> scp.log
-	ssh -i ${pem_path} ${user}@${public_dns_name} <<EOF
+		# Copy the local requirements onto the EC2 instance
+		scp -i ${pem_path} ${local_file} ${user}@${public_dns_name}:${remote_file} 2> scp.log
+		ssh -i ${pem_path} ${user}@${public_dns_name} <<EOF
 if [ -d ~/.venv/${project_name} ]; then
 	sudo rm -rf ~/.venv/${project_name}
 fi
@@ -53,6 +54,18 @@ source ~/.venv/${project_name}/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 EOF
+	fi
+else
+
+# Create a virtual environment, but just don't install anything
+ssh -i ${pem_path} ${user}@${public_dns_name} <<EOF
+if [ -d ~/.venv/${project_name} ]; then
+	sudo rm -rf ~/.venv/${project_name}
+fi
+python3 -m venv ~/.venv/${project_name}
+source ~/.venv/${project_name}/bin/activate
+EOF
+
 fi
 
 # Log
