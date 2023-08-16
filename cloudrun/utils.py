@@ -39,7 +39,7 @@ def _check_key_in_conf(
     _v = conf[_k.key_name]
     if not isinstance(_v, _k.key_type):
         raise ValueError(
-            f"`{_k.key_name}` is not the correct type...should be a {str(_k.key_type)}"  # noqa: E501
+            f"`{_k.key_name}` is not the correct type...should be a {str(_k.key_type)}"
         )
     if _k.key_supported_values is not None:
         if _v not in _k.key_supported_values:
@@ -72,7 +72,7 @@ def _check_optional_key_in_conf(
     _v = conf[_k.key_name]
     if not isinstance(_v, _k.key_type):
         raise ValueError(
-            f"`{_k.key_name}` is not the correct type...should be a {str(_k.key_type)}"  # noqa: E501
+            f"`{_k.key_name}` is not the correct type...should be a {str(_k.key_type)}"
         )
     if _k.key_supported_values is not None:
         if _v not in _k.key_supported_values:

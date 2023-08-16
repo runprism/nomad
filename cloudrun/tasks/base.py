@@ -102,14 +102,14 @@ class BaseTask:
         """
         required_keys = [
             ConfigurationKey("type", str, SUPPORTED_AGENTS),
-            ConfigurationKey("requirements", str),
             ConfigurationKey("entrypoint", dict),
         ]
         for _k in required_keys:
             _check_key_in_conf(_k, conf, name)
 
         optional_keys = [
-            ConfigurationKey("env", dict)
+            ConfigurationKey("env", dict),
+            ConfigurationKey("requirements", str),
         ]
         for _k in optional_keys:
             _check_optional_key_in_conf(_k, conf)

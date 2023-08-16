@@ -70,6 +70,10 @@ class Agent(metaclass=MetaAgent):
         returns:
             requirements path
         """
+        # Not all CloudRun projects will have a `requirements` file.
+        if "requirements" not in agent_conf.keys():
+            return ""
+
         # We already know that the agent configuration is valid. Therefore, it must have
         # a requirements key.
         requirements = agent_conf["requirements"]

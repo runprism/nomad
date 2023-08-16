@@ -297,38 +297,6 @@ class Ec2(Agent):
         os.unlink(json_path)
         return del_resources
 
-    def is_valid_conf(self, agent_conf: Dict[str, Any]):
-        """
-        A EC2 agent should be formatted as follows:
-
-        agent:
-          type: ec2
-          pem_key_path: <path to PEM key>
-          requirements: <path to requirements.txt>
-          python_version: <valid Python build>
-          env:
-            var1: value1
-            var2: value2
-        ...
-        """
-        required_keys = {
-            "type": str,
-            "instance_type": str,
-            "requirements": str,
-            "entrypoint": dict,
-        }
-        optional_keys = {
-            "env": dict,
-            "additional_paths": list,
-            "matrix": dict,
-        }
-
-        return self.check_conf_keys(
-            agent_conf,
-            required_keys,
-            optional_keys
-        )
-
     def check_resources(self,
         ec2_client: Any,
         instance_name: str,
@@ -916,7 +884,7 @@ class Ec2(Agent):
         args:
             agent_conf: agent configuration as dictionary
         returns:
-            `pip install` command for requirements
+            instance type
         """
         return agent_conf["instance_type"]
 
@@ -1065,7 +1033,7 @@ class Ec2(Agent):
 
             # Return the returncode. Return a dictionary in order to avoid confusing
             # this output with the output of an event manager.
-            return {"return_code": returncode}
+            return returncode
 
         # If we encounter any sort of error, delete the resources first and then raise
         except Exception as e:
@@ -1109,7 +1077,7 @@ class Ec2(Agent):
 
         # Return the returncode. Return a dictionary in order to avoid confusing this
         # output with the output of an event manager.
-        return {"return_code": returncode}
+        return returncode
 
     def delete(self):
         """
@@ -1191,3 +1159,6 @@ class Ec2(Agent):
         # Remove the data
         if Path(INTERNAL_FOLDER / 'ec2.json').is_file():
             os.unlink(Path(INTERNAL_FOLDER / 'ec2.json'))
+
+        # Return
+        return 0

@@ -12,10 +12,6 @@ import pytest
 # Constants
 TEST_DIR = Path(__file__).parent
 CONFs = TEST_DIR / 'CONFs'
-TEST_FUNCTION = TEST_DIR / 'test_function'
-TEST_JUPYTER = TEST_DIR / 'test_jupyter'
-TEST_PROJECT = TEST_DIR / 'test_projects'
-TEST_SCRIPT = TEST_DIR / 'test_scripts'
 
 
 # Util functions
