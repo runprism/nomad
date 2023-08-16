@@ -125,7 +125,7 @@ class Function(BaseEntrypoint):
         cmd_structure = r'(?i)^([^\.]+)\.([^\.]+)$'
         matches = re.findall(cmd_structure, self.cmd)
         if len(matches) != 1:
-            raise ValueError(f"`cmd` value not properly formatted for entrypoint of type `{self.type}`")  # noqa: E501
+            raise ValueError("`cmd` value not properly formatted...should be <module_name>.<function_name>")  # noqa: E501
         match = matches[0]
         self.module, self.function = match[0], match[1]
 
@@ -144,3 +144,10 @@ class Function(BaseEntrypoint):
             return f"cd {self.src} && {base_python_cmd}"
         else:
             return base_python_cmd
+
+
+class Jupyter(BaseEntrypoint):
+    """
+    Jupyter entrypoint. This entrypoint is used to execute an entire Jupyter notebook on
+    a user-specified cloud resource.
+    """
