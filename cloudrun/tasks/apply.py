@@ -29,4 +29,4 @@ class ApplyTask(BaseTask):
             agent_conf=self.conf,
             entrypoint=self.entrypoint,
         )
-        agent.apply()
+        return agent.apply()

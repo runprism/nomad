@@ -29,4 +29,4 @@ class RunTask(BaseTask):
             agent_conf=self.conf,
             entrypoint=self.entrypoint,
         )
-        agent.run()
+        return agent.run()
