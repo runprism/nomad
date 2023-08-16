@@ -11,10 +11,10 @@ from pathlib import Path
 from cloudrun.entrypoints import (  # noqa
     MetaEntrypoint,
     BaseEntrypoint,
-    Script,
-    Function,
-    Project,
-    Jupyter
+    Script as ScriptEntrypoint,
+    Function as FunctionEntrypoint,
+    Project as ProjectEntrypoint,
+    Jupyter as JupyterEntrypoint,
 )
 from cloudrun.tests.entrypoints import (  # noqa
     base_tests,
@@ -38,7 +38,7 @@ def test_base_normal_entrypoint():
         entrypoint_conf=conf,
         cloudrun_wkdir=ENTRYPOINT_WKDIR
     )
-    assert isinstance(entrypoint, Script)
+    assert isinstance(entrypoint, ScriptEntrypoint)
 
 
 def test_bad_types():
@@ -103,4 +103,26 @@ def test_bad_src():
     with pytest.raises(ValueError) as cm:
         _ = BaseEntrypoint(entrypoint_conf=conf, cloudrun_wkdir=ENTRYPOINT_WKDIR)
     expected_msg = "could not parse `src` for entrypoint"
+    assert str(cm.value) == expected_msg
+
+
+def test_function_bad_cmd():
+    """
+    An poorly formatted `cmd` argument for a function entrypoint throws an error
+    """
+    conf = function_tests.BAD_COMMAND_FORMAT
+    with pytest.raises(ValueError) as cm:
+        _ = FunctionEntrypoint(entrypoint_conf=conf, cloudrun_wkdir=ENTRYPOINT_WKDIR)
+    expected_msg = "`cmd` value not properly formatted...should be <module_name>.<function_name>"  # noqa: E501
+    assert str(cm.value) == expected_msg
+
+
+def test_function_bad_kwargs():
+    """
+    A bad `kwargs` type throws an error
+    """
+    conf = function_tests.BAD_KWARGS
+    with pytest.raises(ValueError) as cm:
+        _ = FunctionEntrypoint(entrypoint_conf=conf, cloudrun_wkdir=ENTRYPOINT_WKDIR)
+    expected_msg = "`kwargs` is not the correct type...should be a <class 'dict'>"
     assert str(cm.value) == expected_msg
