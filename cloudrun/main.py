@@ -20,10 +20,6 @@ click.rich_click.USE_MARKDOWN = True
 
 
 # Construct command
-def invoke():
-    return cli()
-
-
 @click.group
 def cli():
     pass
@@ -32,7 +28,7 @@ def cli():
 @cli.command()
 @click.option(
     "--file", "-f",
-    type=click.Path,
+    type=str,
     help="""CloudRun configuration file""",
     required=True
 )
@@ -68,7 +64,7 @@ def build():
 @cli.command()
 @click.option(
     "--file", "-f",
-    type=click.Path,
+    type=str,
     help="""CloudRun configuration file""",
     required=True
 )
@@ -106,7 +102,7 @@ def run(file: str, name: str, log_level: str, no_delete: bool):
 @cli.command()
 @click.option(
     "--file", "-f",
-    type=click.Path,
+    type=str,
     help="""CloudRun configuration file""",
     required=True
 )

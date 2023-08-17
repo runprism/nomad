@@ -33,7 +33,7 @@ project_parent_dir="$(dirname ${project_dir})"
 # Compare local requirements to remote requirements. If the two are identical, then do
 # not re-install the requirements. If they aren't, then create a new virtual environment
 # and reinstall.
-if [ -z "${requirements}" ]; then
+if [ ! -z "${requirements}" ]; then
 	local_file="${requirements}"
 	remote_file="./requirements.txt"
 	temp_file=$(mktemp)
