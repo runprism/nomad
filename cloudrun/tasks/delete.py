@@ -4,6 +4,7 @@ Task called via the `cloudrun delete` CLI command
 
 
 # Imports
+import sys
 from cloudrun.agents.base import Agent
 from cloudrun.agents.meta import MetaAgent
 from cloudrun.agents import (  # noqa: F401
@@ -29,4 +30,6 @@ class DeleteTask(BaseTask):
             agent_conf=self.conf,
             entrypoint=self.entrypoint,
         )
-        return agent.delete()
+        returncode = agent.delete()
+        if returncode != 0:
+            sys.exit(1)

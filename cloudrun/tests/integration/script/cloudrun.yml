@@ -3,4 +3,8 @@ my_cloud_agent:
   instance_type: t2.micro
   entrypoint:
     type: script
-    cmd: python main.py
+    cmd: python main.py --output-name test_script
+  requirements: requirements.txt
+  env:
+    AWS_ACCESS_KEY_ID: "{{ env('AWS_ACCESS_KEY_ID') }}"
+    AWS_SECRET_ACCESS_KEY: "{{ env('AWS_SECRET_ACCESS_KEY') }}"

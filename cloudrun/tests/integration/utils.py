@@ -54,7 +54,7 @@ def s3_file_exists(s3_uri: str) -> Optional[str]:
     bucket, key = s3_uri_split[0], "/".join(s3_uri_split[1:])
 
     # Load the object
-    s3_client = boto3.client('s3')
+    s3_client = boto3.client("s3")
     try:
         s3_response = s3_client.get_object(
             Bucket=bucket,
@@ -77,3 +77,23 @@ def s3_file_exists(s3_uri: str) -> Optional[str]:
     except s3_client.exceptions.NoSuchKey:
         print('The S3 objects does not exist in the S3 bucket.')
         return None
+
+
+def delete_s3_file(s3_uri: str) -> None:
+    """
+    Delete file in S3, if it exists
+    """
+    # If the object doesn't exist, just return
+    s3_contents = s3_file_exists(s3_uri)
+    if s3_contents is None:
+        return
+
+    # Otherwise, delete the object
+    s3_uri_split = s3_uri.replace("s3://", "").split("/")
+    bucket, key = s3_uri_split[0], "/".join(s3_uri_split[1:])
+    s3_client = boto3.client("s3")
+    s3_client.delete_object(
+        Bucket=bucket,
+        Key=key
+    )
+    return

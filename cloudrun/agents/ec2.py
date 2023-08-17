@@ -1075,8 +1075,7 @@ class Ec2(Agent):
                 f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{cloudrun.ui.AGENT_WHICH_RUN}[run]{cloudrun.ui.RESET} | {line.rstrip()}"  # noqa: E501
             )
 
-        # Return the returncode. Return a dictionary in order to avoid confusing this
-        # output with the output of an event manager.
+        # Return the returncode.
         return returncode
 
     def delete(self):

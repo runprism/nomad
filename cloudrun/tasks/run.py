@@ -4,6 +4,7 @@ Task called via the `cloudrun run` CLI command
 
 
 # Imports
+import sys
 from cloudrun.agents.base import Agent
 from cloudrun.agents.meta import MetaAgent
 from cloudrun.agents import (  # noqa: F401
@@ -29,4 +30,6 @@ class RunTask(BaseTask):
             agent_conf=self.conf,
             entrypoint=self.entrypoint,
         )
-        return agent.run()
+        returncode = agent.run()
+        if returncode != 0:
+            sys.exit(1)

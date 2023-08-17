@@ -11,7 +11,8 @@ from cloudrun.tests.integration.utils import (
     key_pair_exists,
     security_group_exists,
     running_instance_exists,
-    s3_file_exists
+    s3_file_exists,
+    delete_s3_file,
 )
 
 
@@ -19,16 +20,13 @@ from cloudrun.tests.integration.utils import (
 TEST_DIR = Path(__file__).parent
 TEST_FUNCTION = TEST_DIR / 'function'
 TEST_JUPYTER = TEST_DIR / 'jupyter'
-TEST_PROJECT = TEST_DIR / 'projects'
-TEST_SCRIPT = TEST_DIR / 'scripts'
+TEST_PROJECT = TEST_DIR / 'project'
+TEST_SCRIPT = TEST_DIR / 'script'
 
 
 # Tests
-def test_function():
-    """
-    Test the output of a function deployment
-    """
-    os.chdir(TEST_FUNCTION)
+def _integration_test(test_path: Path, fname_name: str):
+    os.chdir(test_path)
     runner = CliRunner()
 
     # Invoke the `apply` command
@@ -43,16 +41,42 @@ def test_function():
     assert running_instance_exists(resource_name)
     assert result.exit_code == 0
 
+    # Delete file in S3, if it exists
+    file_s3_uri = f"s3://cloudrun/tests/{fname_name}.txt"
+    delete_s3_file(file_s3_uri)
+
     # Run
     result = runner.invoke(
         cli, ["run", "-f", "cloudrun.yml"]
     )
     assert result.exit_code == 0
-    print(result.output)
-    test_output = s3_file_exists("s3://cloudrun/tests/test_function.txt")
-    expected_output = "Hello world from our `test_function` test case!"
+    test_output = s3_file_exists(file_s3_uri)
+    expected_output = f"Hello world from our `{fname_name}` test case!"
     assert test_output == expected_output
 
+    # Delete the resource
     result = runner.invoke(
         cli, ["delete", "-f", "cloudrun.yml"]
     )
+    assert result.exit_code == 0
+
+
+def test_function():
+    """
+    Test the output of a function deployment
+    """
+    _integration_test(TEST_FUNCTION, "test_function")
+
+
+def test_script():
+    """
+    Test the output of a function deployment
+    """
+    _integration_test(TEST_SCRIPT, "test_script")
+
+
+def test_project():
+    """
+    Test the output of a function deployment
+    """
+    _integration_test(TEST_PROJECT, "test_project")
