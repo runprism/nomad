@@ -684,7 +684,7 @@ class Ec2(Agent):
                 )
                 log_instance_name = f"{cloudrun.ui.MAGENTA}{instance_name}{cloudrun.ui.RESET}"  # noqa: E501
                 logger.info(
-                    f"{log_prefix} | Created key pair {log_instance_name}"
+                    f"{log_prefix}  | Created key pair {log_instance_name}"
                 )
 
                 # Write the data to the JSON
@@ -707,7 +707,7 @@ class Ec2(Agent):
                 log_instance_name = f"{cloudrun.ui.MAGENTA}{instance_name}{cloudrun.ui.RESET}"  # noqa: E501
                 log_instance_path = f"{cloudrun.ui.MAGENTA}{str(pem_key_path)}{cloudrun.ui.RESET}"  # noqa: E501
                 logger.info(
-                    f"{log_prefix} | Using existing key-pair {log_instance_name} at {log_instance_path}"  # noqa: E501
+                    f"{log_prefix}  | Using existing key-pair {log_instance_name} at {log_instance_path}"  # noqa: E501
                 )
 
             # Security group
@@ -721,7 +721,7 @@ class Ec2(Agent):
                 log_security_group_id = f"{cloudrun.ui.MAGENTA}{security_group_id}{cloudrun.ui.RESET}"  # noqa: E501
                 log_vpc_id = f"{cloudrun.ui.MAGENTA}{vpc_id}{cloudrun.ui.RESET}"  # noqa: E501
                 logger.info(
-                    f"{log_prefix} | Created security group with ID {log_security_group_id} in VPC {log_vpc_id}"  # noqa: E501
+                    f"{log_prefix}  | Created security group with ID {log_security_group_id} in VPC {log_vpc_id}"  # noqa: E501
                 )
 
                 # Write the data to the JSON
@@ -738,7 +738,7 @@ class Ec2(Agent):
                 self.check_ingress_ip(ec2_client, security_group_id)
                 log_security_group_id = f"{cloudrun.ui.MAGENTA}{security_group_id}{cloudrun.ui.RESET}"  # noqa: E501
                 logger.info(
-                    f"{log_prefix} | Using existing security group {log_security_group_id}"  # noqa: E501
+                    f"{log_prefix}  | Using existing security group {log_security_group_id}"  # noqa: E501
                 )
 
             # Log instance ID template
@@ -771,7 +771,7 @@ class Ec2(Agent):
 
                 # Log
                 logger.info(
-                    f"{log_prefix} | Created EC2 instance with ID {log_instance_id_template.format(instance_id=instance_id)}"  # noqa: E501
+                    f"{log_prefix}  | Created EC2 instance with ID {log_instance_id_template.format(instance_id=instance_id)}"  # noqa: E501
                 )
                 time.sleep(1)
             else:
@@ -781,7 +781,7 @@ class Ec2(Agent):
 
                 # Log
                 logger.info(
-                    f"{log_prefix} | Using existing EC2 instance with ID {log_instance_id_template.format(instance_id=instance_id)}"  # noqa: E501
+                    f"{log_prefix}  | Using existing EC2 instance with ID {log_instance_id_template.format(instance_id=instance_id)}"  # noqa: E501
                 )
 
             # Instance data
@@ -802,7 +802,7 @@ class Ec2(Agent):
                     # Log
                     log_pending_status = f"{cloudrun.ui.YELLOW}pending{cloudrun.ui.RESET}"  # noqa: E501
                     logger.info(
-                        f"{log_prefix} | Instance {log_instance_id_template.format(instance_id=instance_id)} is {log_pending_status}... checking again in 5 seconds"  # noqa: E501
+                        f"{log_prefix}  | Instance {log_instance_id_template.format(instance_id=instance_id)} is {log_pending_status}... checking again in 5 seconds"  # noqa: E501
                     )
                     resp = self.check_instance_data(
                         ec2_client,
@@ -911,16 +911,21 @@ class Ec2(Agent):
         which: str,
         output: Any,
     ):
+        divider = " | "
+        if which == "run":
+            divider = "    | "
+        elif which == "build":
+            divider = "  | "
         if output:
             if isinstance(output, str):
                 if not re.findall(r"^[\-]+$", output.rstrip()):
                     logger.info(
-                        f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{color}[{which}]{cloudrun.ui.RESET} | {output.rstrip()}"  # noqa: E501
+                        f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{color}[{which}]{cloudrun.ui.RESET}{divider}{output.rstrip()}"  # noqa: E501
                     )
             else:
                 if not re.findall(r"^[\-]+$", output.decode().rstrip()):
                     logger.info(
-                        f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{color}[{which}]{cloudrun.ui.RESET} | {output.decode().rstrip()}"  # noqa: E501
+                        f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{color}[{which}]{cloudrun.ui.RESET}{divider}{output.decode().rstrip()}"  # noqa: E501
                     )
 
     def stream_logs(self,
@@ -966,9 +971,6 @@ class Ec2(Agent):
         """
         Create the EC2 instance image
         """
-        # Fire an empty line -- it just looks a little nicer
-        logger.info(" ")
-
         # Instance type
         instance_type = self.parse_instance_type(self.agent_conf)
 
@@ -1023,7 +1025,7 @@ class Ec2(Agent):
             # Log anything from stderr that was printed in the project
             for line in err.readlines():
                 logger.info(
-                    f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{cloudrun.ui.AGENT_WHICH_BUILD}[build]{cloudrun.ui.RESET} | {line.rstrip()}"  # noqa: E501
+                    f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{cloudrun.ui.AGENT_WHICH_BUILD}[build]{cloudrun.ui.RESET}  | {line.rstrip()}"  # noqa: E501
                 )
 
             # If the return code is non-zero, then an error occurred. Delete all of the
@@ -1072,7 +1074,7 @@ class Ec2(Agent):
         # Log anything from stdout that was printed in the project
         for line in out.readlines():
             logger.info(
-                f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{cloudrun.ui.AGENT_WHICH_RUN}[run]{cloudrun.ui.RESET} | {line.rstrip()}"  # noqa: E501
+                f"{cloudrun.ui.AGENT_EVENT}{self.instance_name}{cloudrun.ui.AGENT_WHICH_RUN}[run]{cloudrun.ui.RESET}    | {line.rstrip()}"  # noqa: E501
             )
 
         # Return the returncode.
@@ -1087,9 +1089,6 @@ class Ec2(Agent):
 
         In addition, remove the PEM key from our local files
         """
-        # Fire an empty line -- it just looks a little nicer
-        logger.info(" ")
-
         # Logging styling
         if self.instance_name is None:
             logger.info(

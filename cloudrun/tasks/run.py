@@ -19,7 +19,7 @@ class RunTask(BaseTask):
 
     def run(self):
         """
-        Create the agent specified in the user's configuration file
+        Run the user's entrypoint code on the user's agent
         """
         self.check()
         agent_type = self.conf["type"]
@@ -32,4 +32,18 @@ class RunTask(BaseTask):
         )
         returncode = agent.run()
         if returncode != 0:
-            sys.exit(1)
+            # If the user wants to preserve the cloud resources, then exist
+            if self.args.no_delete_failure:
+                sys.exit(1)
+
+            # Otherwise, delete the resources
+            else:
+                agent.delete()
+                sys.exit(1)
+
+        # Otherwise, the project ran successfully
+        if self.args.no_delete_success:
+            sys.exit(0)
+        else:
+            agent.delete()
+            sys.exit(0)
