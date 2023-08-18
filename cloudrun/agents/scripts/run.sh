@@ -28,3 +28,6 @@ done
 # Run the Prism command via SSH
 project_name="$(basename -- ${project_dir})"
 ssh -i ${pem_path} ${user}@${public_dns_name} "source ~/.venv/${project_name}/bin/activate; cd ../..; cd ${project_dir}; ${command}"
+if [ $exit_code -eq 1 ]; then
+	exit 1
+fi

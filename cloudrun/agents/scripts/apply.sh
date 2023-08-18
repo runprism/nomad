@@ -54,18 +54,24 @@ source ~/.venv/${project_name}/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 EOF
+		exit_code=$?
+		if [ $exit_code -eq 1 ]; then
+			exit 1
+		fi
 	fi
 else
-
-# Create a virtual environment, but just don't install anything
-ssh -i ${pem_path} ${user}@${public_dns_name} <<EOF
-if [ -d ~/.venv/${project_name} ]; then
-	sudo rm -rf ~/.venv/${project_name}
-fi
-python3 -m venv ~/.venv/${project_name}
-source ~/.venv/${project_name}/bin/activate
+	# Create a virtual environment, but just don't install anything
+	ssh -i ${pem_path} ${user}@${public_dns_name} <<EOF
+	if [ -d ~/.venv/${project_name} ]; then
+		sudo rm -rf ~/.venv/${project_name}
+	fi
+	python3 -m venv ~/.venv/${project_name}
+	source ~/.venv/${project_name}/bin/activate
 EOF
-
+	exit_code=$?
+	if [ $exit_code -eq 1 ]; then
+		exit 1
+	fi
 fi
 
 # Log
@@ -80,6 +86,10 @@ IFS=',' read -ra array <<< "${copy_paths}"
 for path in "${array[@]}"; do
 	# Make a directory and change the permissions
 	ssh -i ${pem_path} ${user}@${public_dns_name} "sudo mkdir -p .${path%/*}; sudo chmod 777 -R .${path%/*}"
+	exit_code=$?
+	if [ $exit_code -eq 1 ]; then
+		exit 1
+	fi
 
 	# Copy
 	scp -r -i ${pem_path} ${path} ${user}@${public_dns_name}:.${path%/*} 2> scp.log
@@ -96,6 +106,10 @@ for keyvalue in "${env_array[@]}"; do
 	# Update the key-value pair in .bashrc if it exists
     if ssh -i ${pem_path} ${user}@${public_dns_name} "grep -q '^export ${key}=' ~/.bashrc"; then
         ssh -i ${pem_path} ${user}@${public_dns_name} "sed -i 's/^export ${key}=.*$/export ${key}=${value}/' ~/.bashrc"
+		exit_code=$?
+		if [ $exit_code -eq 1 ]; then
+			exit 1
+		fi
 
     # Add the new key-value pair to the end of .bashrc if it doesn't exist
     else
@@ -106,7 +120,15 @@ done
 
 # Reload .bashrc to update environment variables
 ssh -i ${pem_path} ${user}@${public_dns_name} "source ~/.bashrc"
+exit_code=$?
+if [ $exit_code -eq 1 ]; then
+	exit 1
+fi
 
 # Move all folders into the root folder
 ssh -i ${pem_path} ${user}@${public_dns_name} 'cd ~ && for dir in */; do sudo rm -rf ../../$dir; sudo mv -f $dir ../../ ; done'
+exit_code=$?
+if [ $exit_code -eq 1 ]; then
+	exit 1
+fi
 echo "Done updating remote project and file paths"
