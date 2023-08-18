@@ -1,5 +1,5 @@
 """
-Integration tests (i.e., full runs on micro EC2 instances).
+`apply` integration tests (i.e., full runs on micro EC2 instances).
 """
 
 # Imports

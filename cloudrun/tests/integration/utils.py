@@ -46,6 +46,14 @@ def running_instance_exists(instance_name: str):
     return False
 
 
+def _resources_exist(resource_name: str):
+    return {
+        "key_pair": key_pair_exists(resource_name),
+        "security_group": security_group_exists(resource_name),
+        "instance": running_instance_exists(resource_name)
+    }
+
+
 def s3_file_exists(s3_uri: str) -> Optional[str]:
     """
     Check if file exists in s3. If it does, return file contents as a string

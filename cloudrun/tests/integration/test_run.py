@@ -1,5 +1,5 @@
 """
-Integration tests (i.e., full runs on micro EC2 instances).
+`run` integration tests (i.e., full runs on micro EC2 instances).
 """
 
 # Imports
@@ -8,9 +8,7 @@ from pathlib import Path
 from click.testing import CliRunner
 from cloudrun.main import cli
 from cloudrun.tests.integration.utils import (
-    key_pair_exists,
-    security_group_exists,
-    running_instance_exists,
+    _resources_exist,
     s3_file_exists,
     delete_s3_file,
 )
@@ -26,14 +24,6 @@ TEST_SCRIPT = TEST_DIR / 'script'
 
 
 # Tests
-def _resources_exist(resource_name: str):
-    return {
-        "key_pair": key_pair_exists(resource_name),
-        "security_group": security_group_exists(resource_name),
-        "instance": running_instance_exists(resource_name)
-    }
-
-
 def _apply_run_integration_test(
     test_path: Path,
     fname_name: str,
