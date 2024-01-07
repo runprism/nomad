@@ -1,2 +1,2 @@
-# prism-cloud
-OSS tool to easily run any code on the cloud (EC2 instances, clusters, etc.)
+# Nomad
+The `Nomad` project has been re-branded as `Alto`. Check out https://github.com/runprism/alto
